@@ -1,0 +1,7 @@
+PVWA_URL=https://########/PasswordVault
+VAULT_CONTEXT=XXX
+MATRIX_CONTEXT=YYY
+
+# Please check also if the SQL Matrix Files ( CONVERT 2 and 3 ) are created and up-to-date in the [ SQL ] folder.
+# If required, you may have to sync Matrix Rows between CONVERT 2 and 3. Use dedicated EXTRA script.
+# WARNING : Before running the Matrix Inverter, you have to run INIT script to set Session Parameters.
