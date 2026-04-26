@@ -1,0 +1,6 @@
+# Default owner for everything at root level
+* @krystal-vault-solutions
+
+# ACL Management team for ACL_MANAGEMENT folders
+/ACL_MANAGEMENT/ @krystal-vault-solutions/ACL_MANAGEMENT_Dev
+/ToolBox/ACL_MANAGEMENT/ @krystal-vault-solutions/ACL_MANAGEMENT_Dev
