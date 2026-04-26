@@ -213,6 +213,15 @@ Requirement : Need to transpose INIT Process using Configuration File ( as TSV o
 ---> Update DEV TRACKER file ( as usual ) and sync to ZIP and New OneDrive place.
 ---> Mail had been sent to CyberArk "Fun" Club and dedicated message also posted into FTTB Chat window.
 
++ ACL_MANAGEMENT_20260426...
+---> This is the new published version based on 20260418 version ( above ). This version replace previous published version on KVS Repository\ACL_MANAGEMENT OneDrive sharing and also on https://github.com/krystal-vault-solutions/kvp/tree/main/ACL_MANAGEMENT%20(%20ToolBox%20)/ACL_MANAGEMENT
+     - The link for web access is https://kyndryl.sharepoint.com/:f:/r/teams/mettlingprojects/Shared%20Documents/KVS%20Repository/ACL_MANAGEMENT
+---> Remove one glitch character in ACL_MANAGEMENT_(1)_Format_Table.osts.
+---> Switch back PROD_PAM with URL ( FQDN ) and not IP Address.
+---> REMINDER : Replication on OneDrive ( KVS Repository ) contains all configuration files, but on GitHub ( kvp/.../ACL_MANAGEMENT ) just contains ### and RED configuration files.
+---> Update DEV TRACKER file ( as usual ) and sync to ZIP and OneDrive place.
+---> Mail had been sent to CyberArk "Fun" Club and dedicated message also posted into FTTB Chat window.
+
 
 
 + ### TBC ###

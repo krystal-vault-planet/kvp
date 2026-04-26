@@ -7,6 +7,6 @@ You can reuse them as you want/need on your current CyberArk Deployment/Infrastr
 
 # What is Krystal Vault Planet ?
 
-Once uppon a time, there was an unknown planet into unknown solar system. The planet was small and covered only with green grass. No montains, no rivers, no oceans... Just a small flat green bubble.
+Once upon a time, there was an unknown planet into unknown solar system. The planet was small and covered only with green grass. No montains, no rivers, no oceans... Just a small flat green bubble.
 
 On this ( virtual ) planet was built one concrete cubic building. The building is 20 meters large and 20 meters high. The building get one ground level and 3 stages. #_UNDER_CONSTRUCTION_#
