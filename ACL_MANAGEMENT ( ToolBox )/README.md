@@ -35,23 +35,22 @@ This solution is part of the **Krystal Vault Planet (KVP)** initiative and the *
          [ $2_EXTRACT_ACL_.cmd ]
                   |
                   v
-   REST ACL → SMART_STRING → ROLE
+    REST ACL → SMART_STRING → ROLE
           (LogParser Engine)
                   |
                   v
-  [_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
+\[_<VAULT_CONTEXT>_\]_OWNERS_ROLE_MATRIX_.tsv
                   |
      +------------+-------------+
      |                          |
      v                          v
 Excel / Pivot Analysis     ACL Update Scripts
-|                          |
-v                          v
+     |                          |
+     v                          v
 Visual Feedback Layer     [ REFRESH / SUPPRESS ]
-|
-v
-[ $4_TERM_.cmd ]
-
+                                |
+                                v
+                          [ $4_TERM_.cmd ]
 
 ---
 
@@ -218,16 +217,213 @@ Input:
 
 ## 🔁 ACL Conversion Model
 
-### 🔹 SMART_STRING
+### 
+🧬 ACL SMART STRING — Detailed Model
 
-- Compact format
-- 1 character per permission
+The **ACL_SMART_STRING** is the core normalization format used by the ToolBox.
+
+It provides a **compact, deterministic, and reversible representation** of CyberArk Safe permissions.
+
+---
+
+### 🔹 Global Format
 
 Example:
 
-RWX--
+#_LuR_CPWTnrDU_SmOaB_A_N_mcd_#
 
 ---
+
+Structure:
+
+
+#<ACCOUNT_PERMISSIONS><SAFE_PERMISSIONS>#
+
+Each character represents a **specific permission** as defined in the CyberArk PVWA permission panel.
+
+---
+
+### 🔹 Permission Encoding
+
+Each letter corresponds to a permission:
+
+#### 📦 Account Permissions
+
+| Letter | Meaning |
+|--------|--------|
+| L | List accounts |
+| u | Use accounts |
+| R | Retrieve / View secret |
+
+---
+
+#### 🔧 Account Management
+
+| Letter | Meaning |
+|--------|--------|
+| C | Create accounts |
+| P | Modify properties |
+| W | Update password |
+| T | CPM operations |
+| n | Specify next password |
+| r | Rename account |
+| D | Delete account |
+| U | Unlock account |
+
+---
+
+#### 🛡️ Safe Permissions
+
+| Letter | Meaning |
+|--------|--------|
+| S | Manage Safe |
+| m | View members |
+| O | Manage owners |
+| a | View audit |
+| B | Backup |
+
+---
+
+#### ✅ Access Control
+
+| Letter | Meaning |
+|--------|--------|
+| A | Approve requests |
+| _ | Confirmation level placeholder |
+| N | No confirmation required |
+
+---
+
+#### 📁 Folder Permissions
+
+| Letter | Meaning |
+|--------|--------|
+| m | Move |
+| c | Create folder |
+| d | Delete folder |
+
+---
+
+### 🔹 Key Characteristics
+
+- ✅ Fully reversible
+- ✅ Deterministic encoding
+- ✅ No information loss
+- ✅ Supports unknown patterns (preserved as-is)
+
+---
+
+🔴 **[PLACEHOLDER — ADD ACL SMART STRING PERMISSION TABLE SCREENSHOT HERE]**
+
+---
+
+## 🧾 ACL ROLE MATRIX
+
+The ToolBox converts SMART_STRING into **human-readable roles** using configurable matrices.
+
+---
+
+### 🔹 Example — Internal Roles
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#_LuR_CPWTnrDU_SmOaB_A_N_mcd_#` | (M)_MASTER_(M) |
+| `#_LuR_CPWTnrDU_SmOaB_A__N_mcd_#` | (M)_SUPER_ADMIN_(M) |
+
+---
+
+### 🔹 Example — CyberArk Default Roles
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#_Lu__________________________#` | (C)_CONNECT_ONLY_(C) |
+| `#_LuR_________________________#` | (C)_READ_ONLY_(C) |
+| `#_LuR___________mOa___A_______#` | (C)_APPROVER_(C) |
+
+---
+
+### 🔹 Example — End-User Roles
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#_LuR_____T____m_____#` | (R)_END-USER_(R) |
+| `#_LuR_WT___U___m_____#` | (R)_END-USER+UNLOCKER_(R) |
+
+---
+
+### 🔹 Example — Technical Roles
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#_LuR_CPWTnrDU__a____mcd_#` | (T)_CPM_ENGINE_(T) |
+| `#_Lu_______U___________#` | (T)_PSM_UNLOCKER_(T) |
+
+---
+
+### 🔹 Example — Internal Built-in Roles
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#______________B_________#` | (i)_BACKUP_(i) |
+| `#_L____________m________#` | (i)_AUDITOR_(i) |
+| `#_Lu_______U____mcd______#` | (i)_OPERATOR_(i) |
+
+---
+
+### 🔹 Special Case
+
+| SMART_STRING Pattern | Role |
+|----------------------|------|
+| `#________________________#` | (?)_NO_PERMISSION_(?) |
+
+---
+
+🔴 **[PLACEHOLDER — ADD ACL ROLE MATRIX SCREENSHOT HERE]**
+
+---
+
+## 🔄 Conversion Consistency
+
+The ToolBox ensures:
+
+- Forward conversion:
+
+REST ACL → SMART_STRING → ROLE
+
+- Reverse conversion:
+
+ROLE → SMART_STRING → REST ACL
+
+---
+
+### ⚠️ Important
+
+When updating role matrices:
+
+- Update **conversion mapping (LogParser file #2)**
+- Update **reverse mapping (LogParser file #3)**
+
+👉 Both directions must remain consistent
+
+---
+
+## 🧠 Design Insight
+
+The SMART_STRING model provides:
+
+- ✅ A normalized identity for ACL sets  
+- ✅ A comparison-friendly format  
+- ✅ A bridge between:
+  - Technical permissions (REST API)
+  - Functional roles (human-readable)
+
+---
+
+👉 This enables:
+- PivotTable aggregation
+- Role-based analysis
+- Governance reporting
+- Automated remediation workflows
 
 ### 🔹 ACL_ROLE
 
