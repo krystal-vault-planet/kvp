@@ -1,585 +1,728 @@
-# 🚧 DRAFT VERSION — UNDER REVIEW BY CYBERARK FUN CLUB 🚧
+# 🚧 DRAFT VERSION — UNDER REVIEW BY CYBERARK FUN CLUB MEMBERS 🚧
+
+> **Status:** Draft documentation for review, corrections, and functional validation by CyberArk Fun Club members before wider publication.
 
 ---
 
-# 🔐 ACL_MANAGEMENT (ToolBox)
+# ACL_MANAGEMENT (ToolBox)
 
-## 📖 Overview
+## Overview
 
-The **ACL_MANAGEMENT ToolBox** is a lightweight and modular framework designed to:
+`ACL_MANAGEMENT (ToolBox)` is a lightweight and modular tool pack designed to support CyberArk Safe ACL extraction, normalization, visualization, and controlled remediation.
 
-- Extract CyberArk Safe ACLs using REST API
-- Normalize permission data using a compact encoding model
-- Convert permissions into human-readable roles
-- Perform controlled ACL updates (add / modify / suppress)
-- Provide a visual governance layer using Excel PivotTables and Office Scripts
+The ToolBox is intended to help with the following activities:
 
-This solution is part of the **Krystal Vault Planet (KVP)** initiative and the **CyberArk Fun Club community**, and is intended for:
+- Extract Safe ACLs from CyberArk PVWA through REST API.
+- Normalize raw REST API permission data into a deterministic compact string format.
+- Convert permission patterns into friendly role names.
+- Review ownership and permissions in Excel through normalized Pivot Tables.
+- Prepare controlled ACL updates or suppressions from reviewed data sets.
+- Re-apply changes to Safes through dedicated refresh and suppression workflows.
 
-- Lab environments (KVS)
-- Quick customer assessments
-- PAM governance workflows
+This ToolBox is part of the **Krystal Vault Planet (KVP)** and **CyberArk Fun Club** community effort and is primarily intended for:
 
----
-
-## 🏗️ Architecture Overview
-
-       +----------------------+
-       |   CyberArk PVWA API  |
-       +----------+-----------+
-                  |
-                  v
-         [ $1_INIT_.cmd ]
-                  |
-                  v
-         [ $2_EXTRACT_ACL_.cmd ]
-                  |
-                  v
-    REST ACL → SMART_STRING → ROLE
-          (LogParser Engine)
-                  |
-                  v
-\[_<VAULT_CONTEXT>_\]_OWNERS_ROLE_MATRIX_.tsv
-                  |
-     +------------+-------------+
-     |                          |
-     v                          v
-Excel / Pivot Analysis     ACL Update Scripts
-     |                          |
-     v                          v
-Visual Feedback Layer     [ REFRESH / SUPPRESS ]
-                                |
-                                v
-                          [ $4_TERM_.cmd ]
+- Lab environments
+- Quick assessment scenarios
+- Governance and review workshops
+- Controlled remediation preparations
 
 ---
 
-🔴 **[PLACEHOLDER — ADD ARCHITECTURE DIAGRAM SCREENSHOT HERE]**
+## Architecture Overview
+
+The overall processing model is based on four major stages:
+
+1. **Initialize a session** against one Vault context.
+2. **Extract ACL data** and normalize it.
+3. **Analyze the normalized data** in Excel through Office Scripts and Pivot Tables.
+4. **Refresh or suppress ACLs** using reviewed TSV input files.
+
+### Logical flow
+
+```text
+CyberArk PVWA REST API
+        |
+        v
+$1_INIT_.cmd
+        |
+        v
+$2_EXTRACT_ACL_.cmd
+        |
+        v
+REST ACL --> ACL_SMART_STRING --> ACL_ROLE
+        |
+        v
+[_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
+        |
+        +-----------------------------+
+        |                             |
+        v                             v
+Excel / Office Scripts           $3_REFRESH_ACL_.cmd
+(Pivot review & feedback)        $3_SUPPRESS_ACL_.cmd
+        |                             |
+        +-------------+---------------+
+                      |
+                      v
+                  $4_TERM_.cmd
+```
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add high-level architecture diagram here.
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
-### 📦 `bin/`
-Contains:
-- Executables (.exe)
-- DLL libraries
-- PowerShell scripts
+The ToolBox is organized into a modular sub-folder structure.
 
-👉 Used for:
-- REST API communication
-- ACL extraction and updates
+### `bin`
+
+This folder contains executables, DLL files, and PowerShell scripts used for extraction and refresh processing.
+
+Typical contents include:
+
+- PowerShell scripts used to call CyberArk PVWA REST API
+- Supporting binaries
+- Supporting DLL dependencies
+
+This folder is the execution engine of the ToolBox.
+
+### `cfg`
+
+This folder contains one configuration file per Vault environment.
+
+Template configuration files are provided to simplify onboarding.
+
+Each configuration file contains **three valid rows** plus optional comments starting with `#`.
+
+The three operational parameters are:
+
+1. `PVWA_URL`
+2. `VAULT_CONTEXT`
+3. `MATRIX_CONTEXT`
+
+#### `PVWA_URL`
+
+This parameter defines the REST API entry point, for example:
+
+```text
+https://<my-vault-web-portal>/PasswordVault
+```
+
+#### `VAULT_CONTEXT`
+
+This parameter is used to prefix generated files, including:
+
+- logs
+- temporary files
+- output files
+
+This allows multiple extractions against multiple Vaults from the same workspace without naming conflicts.
+
+#### `MATRIX_CONTEXT`
+
+This parameter controls the ACL conversion logic.
+
+The conversion sequence is:
+
+```text
+REST API ACL --> ACL_SMART_STRING --> ACL_ROLE
+```
+
+### `doc`
+
+This folder is currently empty.
+
+It is reserved for future offline documentation, such as:
+
+- one RTF / WordPad document for each primary command:
+  - `INIT`
+  - `EXTRACT`
+  - `REFRESH`
+  - `TERM`
+- one document explaining the overall processing model and workspace organization
+- one document describing installation and configuration
+- one document describing quick test scenarios for basic validation
+
+### `log`
+
+This folder is currently empty except for a placeholder file required to keep the folder in GitHub.
+
+It is intended to store:
+
+- execution logs
+- debug logs
+
+All generated log files are prefixed with `VAULT_CONTEXT`.
+
+### `sql`
+
+This folder contains LogParser SQL-like conversion logic.
+
+These files are used to convert:
+
+- REST API ACL output into `ACL_SMART_STRING`
+- `ACL_SMART_STRING` into `ACL_ROLE`
+- and the reverse path when refresh or suppression is performed
+
+This folder is the normalization and reverse-conversion engine of the ToolBox.
+
+### `tmp`
+
+This folder is currently empty except for a placeholder file required to keep the folder in GitHub.
+
+It is intended to store intermediate processing files generated during execution.
+
+All generated temporary files are prefixed with `VAULT_CONTEXT`.
+
+### `xls`
+
+This folder contains Office Scripts.
+
+These scripts can be stored either:
+
+- in OneDrive when shared usage is required
+- or in the local `Office Scripts` area on the laptop when usage remains local
+
+These scripts implement the visualization and feedback layer for the TSV outputs.
 
 ---
 
-### ⚙️ `cfg/`
+## Workspace Conventions
 
-Configuration files (one per Vault):
+All main output files produced by extraction and all main input files consumed by refresh or suppression are stored at the **same level as the main command scripts**.
 
-
-PVWA_URL=https:///PasswordVault
-VAULT_CONTEXT=MYVAULT
-MATRIX_CONTEXT=DEFAULT
-
-- `VAULT_CONTEXT` prefixes:
-  - logs
-  - temp files
-  - output
-- Enables **multi-vault parallel execution**
-- `MATRIX_CONTEXT` defines ACL conversion logic
+This keeps the execution model simple and makes manual review easier.
 
 ---
 
-### 🧠 `sql/`
+## Main Command Workflow
 
-Contains LogParser SQL logic:
+The ToolBox relies on a session-driven execution model:
 
-- ACL → SMART_STRING
-- SMART_STRING → ACL_ROLE
-- Reverse transformations
+```text
+INIT --> EXTRACT --> REVIEW --> REFRESH or SUPPRESS --> TERM
+```
 
----
+### `\$1_INIT_.cmd`
 
-### 📝 `log/`
+This script initializes the session.
 
-- Execution logs
-- Debug logs
-- Prefixed by `VAULT_CONTEXT`
+Main functions:
 
----
+- prompts for the Vault configuration file name
+- loads parameters from the selected configuration file
+- authenticates to CyberArk PVWA REST API
+- retrieves the authentication token
 
-### 🧪 `tmp/`
+The script uses `curl` for PVWA connection and logon.
 
-- Intermediate processing files
-- Automatically generated
-- Prefixed by `VAULT_CONTEXT`
+#### Recommended usage
 
----
+When the target is **ACL extraction only**, best practice is to authenticate with an **Auditor** account.
 
-### 📊 `xls/`
+Reason:
 
-Office Scripts for:
+- the Auditor account is expected to be present on all Safes by design
+- the Auditor account cannot normally be removed from Safe permissions
+- this makes it a stable account for read-oriented extraction scenarios
 
-- Data formatting
-- Pivot creation
-- Refresh automation
-- Visual feedback (coloring / marking)
+### `\$2_EXTRACT_ACL_.cmd`
 
----
+This script performs Safe discovery, ACL extraction, consolidation, and conversion.
 
-### 📚 `doc/` (Planned)
+#### Main behavior
 
-Future documentation:
-- Command guides
-- Installation steps
-- Processing explanation
-- Test scenarios
+1. Prompts for a Safe filter.
+2. The filter supports regular-expression style input similar to `FINDSTR /R`.
+3. Calls PowerShell to extract the full Safe list.
+4. Filters the Safe list.
+5. Extracts ACLs Safe-by-Safe through PowerShell.
+6. Concatenates the extracted ACL data.
+7. Performs conversion to `ACL_SMART_STRING`.
+8. Performs conversion from `ACL_SMART_STRING` to `ACL_ROLE`.
 
----
+The conversion logic uses LogParser and the active `MATRIX_CONTEXT`.
 
-## ⚙️ Command Workflow
+#### Conversion fallback rule
 
-### 🚀 `$1_INIT_.cmd`
+If one `ACL_SMART_STRING` is **not** defined in the conversion matrix, the value is preserved **as-is**.
 
-- Prompts for config file
-- Loads environment
-- Authenticates via `curl` to PVWA
-- Retrieves authentication token
+This prevents information loss and keeps unknown permission patterns visible.
 
-✅ Best practice:
-Use **Auditor account** for extraction
+#### Conversion-only mode
 
----
+The script supports:
 
-### 📥 `$2_EXTRACT_ACL_.cmd`
-
-#### Features:
-- Safe filtering (regex)
-- ACL extraction via PowerShell
-- Data consolidation
-
-#### Conversion pipeline:
-
-REST API → SMART_STRING → ACL_ROLE
-
-#### Output:
-
-[<VAULT_CONTEXT>]OWNERS_ROLE_MATRIX.tsv
-
-#### Option:
-
+```text
 -CONVERT-ONLY
-→ Run conversion only
+```
 
----
+This mode re-runs only the conversion steps:
 
-### 🔄 `$3_REFRESH_ACL_.cmd`
+- Step 1: REST API output to `ACL_SMART_STRING`
+- Step 2: `ACL_SMART_STRING` to `ACL_ROLE`
 
-Input:
+This mode is useful when:
 
-[<VAULT_CONTEXT>]ROLE_MATRIX#REFRESH#_.tsv
+- the conversion matrix has been adjusted
+- the transformation logic needs to be re-tested
+- extraction does not need to be repeated
 
-- Converts ROLE → REST ACL
-- Applies modifications
+#### Output file
 
-#### Option:
+The main extraction output is:
 
+```text
+[_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
+```
+
+### `\$3_REFRESH_ACL_.cmd`
+
+This script applies ACL additions or modifications.
+
+#### Input file
+
+```text
+[_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_REFRESH_#_.tsv
+```
+
+#### Main behavior
+
+The refresh workflow performs the reverse transformation path compared to extraction:
+
+```text
+ACL_ROLE --> ACL_SMART_STRING --> REST API ACL
+```
+
+The script then applies adds or modifications to Safe member permissions.
+
+#### Authentication requirement
+
+For refresh operations, it is necessary to authenticate again with a privileged account such as:
+
+```text
+Administrator
+```
+
+In practice, the operator should re-run `\$1_INIT_.cmd` with a privileged account before launching refresh.
+
+#### Conversion-only mode
+
+The script also supports:
+
+```text
 -CONVERT-ONLY
-→ Validation mode (no change)
+```
 
-✅ Requires privileged account
+This mode runs the reverse conversion logic without applying changes to the Vault.
 
----
+It is useful for validation of:
 
-### ❌ `$3_SUPPRESS_ACL_.cmd`
+- role mapping
+- reverse transformation
+- candidate refresh input files
 
-Input:
+### `\$3_SUPPRESS_ACL_.cmd`
 
-[<VAULT_CONTEXT>]ROLE_MATRIX#SUPPRESS#_.tsv
+This script removes permissions.
 
-- Removes permissions
+#### Input file
 
-#### Option:
+```text
+[_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_SUPPRESS_#_.tsv
+```
 
+#### Main behavior
+
+- uses a dedicated column layout different from refresh
+- uses dedicated PowerShell logic for permission deletion
+- performs reverse conversion where required before execution
+
+#### Authentication requirement
+
+Same as refresh: a privileged token is required.
+
+This means the operator should re-run `\$1_INIT_.cmd` with a privileged account before launching suppression.
+
+#### Conversion-only mode
+
+The script also supports:
+
+```text
 -CONVERT-ONLY
-→ Dry-run validation
+```
 
-✅ Requires privileged account
+This allows validation of the reverse-conversion pipeline without deleting permissions.
 
----
+### `\$4_TERM_.cmd`
 
-### 🔒 `$4_TERM_.cmd`
+This script terminates the session.
 
-- Logs off from PVWA
-- Clears session variables
+Main functions:
 
----
+- logs off from PVWA through `curl`
+- clears command-shell variables
+- resets the environment to prepare for another session or another Vault context
 
-## 🔁 ACL Conversion Model
-
-### 
-🧬 ACL SMART STRING — Detailed Model
-
-The **ACL_SMART_STRING** is the core normalization format used by the ToolBox.
-
-It provides a **compact, deterministic, and reversible representation** of CyberArk Safe permissions.
+This helps keep the session model clean between runs.
 
 ---
 
-### 🔹 Global Format
+## ACL_SMART_STRING Model
 
-Example:
+`ACL_SMART_STRING` is the normalization format used by the ToolBox.
 
+It provides a compact, readable, deterministic representation of the permissions attached to one Safe member.
+
+### Current string format
+
+The current format is represented as:
+
+```text
 #_LuR_CPWTnrDU_SmOaB_A_N_mcd_#
+```
+
+Each letter corresponds to one permission shown on the PVWA permission panel.
+
+### Segment overview
+
+The example above can be read as grouped permission zones:
+
+```text
+#_LuR_CPWTnrDU_SmOaB_A_N_mcd_#
+```
+
+Where the grouped meaning is:
+
+- `LuR` = account access permissions
+- `CPWTnrDU` = account management permissions
+- `SmOaB` = Safe-level permissions
+- `A` = approve requests permission
+- `N` = no-confirmation permission
+- `mcd` = folder-level permissions
+
+### Permission reference
+
+#### Account access permissions
+
+- `L` = List
+- `u` = Use
+- `R` = Read
+
+#### Account management permissions
+
+- `C` = Create
+- `P` = Properties
+- `W` = Write
+- `T` = CPM Tasks
+- `n` = next pass
+- `r` = rename
+- `D` = Delete
+- `U` = Unlock
+
+#### Safe-level permissions
+
+- `S` = manage Safe
+- `m` = view_members
+- `O` = manage Owners
+- `a` = view activities
+- `B` = Backup
+
+#### Approval and access-control area
+
+- `A` = Approve
+- `_` = confirmation level placeholder or separator position
+- `N` = No confirmation
+
+#### Folder permissions
+
+- `m` = move
+- `c` = create
+- `d` = delete
+
+### Important note
+
+Rights names and descriptions are aligned with wording extracted from PVWA version `14.2`, while alternate wording may exist in other versions.
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add the ACL Smart String description image here.
+
+Suggested file reference:
+
+```text
+ACL_Smart_String_Description_20250916.png
+```
 
 ---
 
-Structure:
+## ACL Role Matrix
 
+The ToolBox converts normalized permission strings into friendly role names.
 
-#<ACCOUNT_PERMISSIONS><SAFE_PERMISSIONS>#
+This conversion is driven by the active `MATRIX_CONTEXT` and the relevant LogParser files.
 
-Each character represents a **specific permission** as defined in the CyberArk PVWA permission panel.
+### Main concept
 
----
+The role-mapping model allows the operator to move from:
 
-### 🔹 Permission Encoding
+```text
+low-level permission flags --> normalized ACL_SMART_STRING --> friendly ACL_ROLE
+```
 
-Each letter corresponds to a permission:
+This makes pivoting, reviewing, grouping, and remediation preparation much easier.
 
-#### 📦 Account Permissions
+### Examples of role families currently used
 
-| Letter | Meaning |
-|--------|--------|
-| L | List accounts |
-| u | Use accounts |
-| R | Retrieve / View secret |
+The current examples include several functional families, such as:
 
----
+- Vault Management Role Matrix (for internal users only)
+- CyberArk Default Roles (as shown on PVWA permission menu)
+- Vault Standard Role Matrix (for external end-users)
+- Vault Technical Role Matrix (for bots and CyberArk components)
+- Vault Internal Role Matrix (for built-in groups)
+- No-permission placeholder rows for special ownership cases
 
-#### 🔧 Account Management
+### Example role labels
 
-| Letter | Meaning |
-|--------|--------|
-| C | Create accounts |
-| P | Modify properties |
-| W | Update password |
-| T | CPM operations |
-| n | Specify next password |
-| r | Rename account |
-| D | Delete account |
-| U | Unlock account |
+Examples of friendly role labels currently visible in the provided matrix include:
 
----
+```text
+(M)_MASTER_(M)
+(M)_SUPER_ADMIN_(M)
+(M)_MANAGE_PROPERTIES_(M)
+(C)_CONNECT_ONLY_(C)
+(C)_READ_ONLY_(C)
+(R)_END-USER_(R)
+(R)_END-USER+UNLOCKER_(R)
+(T)_CPM-ENGINE_(T)
+(i)_AUDITOR_(i)
+(?)_NO_PERMISSION_(?)
+```
 
-#### 🛡️ Safe Permissions
+### Consistency rule
 
-| Letter | Meaning |
-|--------|--------|
-| S | Manage Safe |
-| m | View members |
-| O | Manage owners |
-| a | View audit |
-| B | Backup |
+When the mapping logic is updated in the LogParser conversion file used for:
 
----
+```text
+ACL_SMART_STRING --> ACL_ROLE
+```
 
-#### ✅ Access Control
+then the reverse conversion file used for:
 
-| Letter | Meaning |
-|--------|--------|
-| A | Approve requests |
-| _ | Confirmation level placeholder |
-| N | No confirmation required |
+```text
+ACL_ROLE --> ACL_SMART_STRING
+```
 
----
+must also be aligned.
 
-#### 📁 Folder Permissions
+This is required to preserve conversion reversibility.
 
-| Letter | Meaning |
-|--------|--------|
-| m | Move |
-| c | Create folder |
-| d | Delete folder |
+🔴 **SCREENSHOT PLACEHOLDER:** Add the ACL role matrix example image here.
 
----
+Suggested file reference:
 
-### 🔹 Key Characteristics
-
-- ✅ Fully reversible
-- ✅ Deterministic encoding
-- ✅ No information loss
-- ✅ Supports unknown patterns (preserved as-is)
+```text
+ACL_MATRIX_from_RED_VAULT_20250915.png
+```
 
 ---
 
-🔴 **[PLACEHOLDER — ADD ACL SMART STRING PERMISSION TABLE SCREENSHOT HERE]**
+## Excel Review Workflow
+
+After extraction, the main TSV output can be reviewed in Excel.
+
+Excel plus Office Scripts provides the visualization layer of the ToolBox.
+
+### Step 1 — Import the TSV file into Excel
+
+Import the main extraction output:
+
+```text
+[_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
+```
+
+Suggested workflow:
+
+1. Open Excel.
+2. Use **Data** > **From Text/CSV**.
+3. Select the TSV file.
+4. Confirm tab-separated parsing.
+5. Load the content into a worksheet.
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add TSV import screen here.
+
+### Step 2 — Run Office Script `ACL_MANAGEMENT_(1)_Format_Table.osts`
+
+Purpose:
+
+- normalize the imported sheet
+- prepare the sheet as a structured table
+- make the data ready for Pivot Table creation
+
+### Step 3 — Run Office Script `ACL_MANAGEMENT_(2)_Create_PivTab.osts`
+
+Purpose:
+
+- build the normalized Pivot Table
+- create an ACL review matrix from the imported data
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add Pivot Table creation result here.
+
+### Step 4 — Run Office Script `ACL_MANAGEMENT_(3)_Refresh_PivTab.osts`
+
+Purpose:
+
+- refresh formatting after any Pivot update
+- re-apply expected presentation rules
+
+Recommended usage:
+
+- assign the script to an Excel button for repeated use after refreshes
+
+### Step 5 — Run Office Script `ACL_MANAGEMENT_(4)_Mark_Cells.osts` (optional)
+
+Purpose:
+
+- add marks, such as crosses, for manual review feedback
+- support the visual review workflow developed for ACL validation
+
+Recommended usage:
+
+- assign the script to an Excel button
+- use it on demand during review sessions
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add marked-cells example here.
+
+### Step 6 — Run Office Script `ACL_MANAGEMENT_(5)_Color_Feedback.osts` (optional)
+
+Purpose:
+
+- add color feedback to selected areas
+- optionally enrich the input data sheet with identifiable context
+
+The current visual usage described includes adding or coloring:
+
+- `SAFE`
+- `MEMBER`
+- `ACL_ROLE`
+
+using colors such as:
+
+- `YELLOW`
+- `ORANGE`
+- `BLUE`
+
+Recommended usage:
+
+- assign the script to an Excel button
+- use it after Pivot refresh or as part of the review process
+
+🔴 **SCREENSHOT PLACEHOLDER:** Add color-feedback example here.
 
 ---
 
-## 🧾 ACL ROLE MATRIX
+## Office Scripts Summary
 
-The ToolBox converts SMART_STRING into **human-readable roles** using configurable matrices.
+The currently referenced Office Scripts are:
 
----
-
-### 🔹 Example — Internal Roles
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#_LuR_CPWTnrDU_SmOaB_A_N_mcd_#` | (M)_MASTER_(M) |
-| `#_LuR_CPWTnrDU_SmOaB_A__N_mcd_#` | (M)_SUPER_ADMIN_(M) |
-
----
-
-### 🔹 Example — CyberArk Default Roles
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#_Lu__________________________#` | (C)_CONNECT_ONLY_(C) |
-| `#_LuR_________________________#` | (C)_READ_ONLY_(C) |
-| `#_LuR___________mOa___A_______#` | (C)_APPROVER_(C) |
-
----
-
-### 🔹 Example — End-User Roles
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#_LuR_____T____m_____#` | (R)_END-USER_(R) |
-| `#_LuR_WT___U___m_____#` | (R)_END-USER+UNLOCKER_(R) |
-
----
-
-### 🔹 Example — Technical Roles
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#_LuR_CPWTnrDU__a____mcd_#` | (T)_CPM_ENGINE_(T) |
-| `#_Lu_______U___________#` | (T)_PSM_UNLOCKER_(T) |
-
----
-
-### 🔹 Example — Internal Built-in Roles
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#______________B_________#` | (i)_BACKUP_(i) |
-| `#_L____________m________#` | (i)_AUDITOR_(i) |
-| `#_Lu_______U____mcd______#` | (i)_OPERATOR_(i) |
-
----
-
-### 🔹 Special Case
-
-| SMART_STRING Pattern | Role |
-|----------------------|------|
-| `#________________________#` | (?)_NO_PERMISSION_(?) |
-
----
-
-🔴 **[PLACEHOLDER — ADD ACL ROLE MATRIX SCREENSHOT HERE]**
-
----
-
-## 🔄 Conversion Consistency
-
-The ToolBox ensures:
-
-- Forward conversion:
-
-REST ACL → SMART_STRING → ROLE
-
-- Reverse conversion:
-
-ROLE → SMART_STRING → REST ACL
-
----
-
-### ⚠️ Important
-
-When updating role matrices:
-
-- Update **conversion mapping (LogParser file #2)**
-- Update **reverse mapping (LogParser file #3)**
-
-👉 Both directions must remain consistent
-
----
-
-## 🧠 Design Insight
-
-The SMART_STRING model provides:
-
-- ✅ A normalized identity for ACL sets  
-- ✅ A comparison-friendly format  
-- ✅ A bridge between:
-  - Technical permissions (REST API)
-  - Functional roles (human-readable)
-
----
-
-👉 This enables:
-- PivotTable aggregation
-- Role-based analysis
-- Governance reporting
-- Automated remediation workflows
-
-### 🔹 ACL_ROLE
-
-- Human-readable abstraction
-
-Example:
-
-FULL_ACCESS
-READ_ONLY
-SAFE_OWNER
-
----
-
-✅ Unknown combinations are preserved  
-✅ Conversion is reversible  
-✅ Fully controlled by `MATRIX_CONTEXT`
-
----
-
-## 📊 Excel Visualization Layer
-
----
-
-### 📥 Import Data
-
-1. Open Excel  
-2. Go to **Data → From Text/CSV**  
-3. Import file:
-
-
-[<VAULT_CONTEXT>]OWNERS_ROLE_MATRIX.tsv
-
-4. Ensure:
-- Tab delimiter
-- Correct column recognition
-
----
-
-🔴 **[PLACEHOLDER — ADD RAW TSV IMPORT SCREENSHOT HERE]**
-
----
-
-### 🧱 Format Table
-
-Script:
-
+```text
 ACL_MANAGEMENT_(1)_Format_Table.osts
-
-- Normalize dataset
-- Prepare for Pivot usage
-
----
-
-### 📊 Create Pivot Table
-
-Script:
-
 ACL_MANAGEMENT_(2)_Create_PivTab.osts
-
-Creates:
-- Normalized ACL matrix
-- SAFE / MEMBER / ROLE view
-
----
-
-🔴 **[PLACEHOLDER — ADD PIVOT TABLE SCREENSHOT HERE]**
-
----
-
-### 🔄 Refresh Pivot Table
-
-Script:
-
 ACL_MANAGEMENT_(3)_Refresh_PivTab.osts
-
-- Re-applies formatting
-- Cleans layout after refresh
-
-👉 Recommended usage:
-- Assign to Excel button
-
----
-
-### ✏️ Mark Cells (Optional)
-
-Script:
-
 ACL_MANAGEMENT_(4)_Mark_Cells.osts
-
-- Adds visual markers (cross)
-- Supports manual review workflow
-
----
-
-🔴 **[PLACEHOLDER — ADD MARK CELLS SCREENSHOT HERE]**
-
----
-
-### 🎨 Color Feedback (Optional)
-
-Script:
-
 ACL_MANAGEMENT_(5)_Color_Feedback.osts
+```
 
-Adds visual cues:
+### Intended usage summary
 
-| Color   | Meaning |
-|--------|--------|
-| YELLOW | Input dataset |
-| ORANGE | Pivot results |
-| BLUE   | SAFE / MEMBER / ROLE markers |
-
-👉 Can also enrich source dataset
-
----
-
-🔴 **[PLACEHOLDER — ADD COLOR FEEDBACK SCREENSHOT HERE]**
-
----
-
-## 🧠 Key Design Principles
-
-- ✅ Multi-vault support (VAULT_CONTEXT)
-- ✅ Stateless execution model
-- ✅ Reversible transformation pipeline
-- ✅ Clear separation:
-  - Extraction
-  - Transformation
-  - Action
-  - Visualization
+- `ACL_MANAGEMENT_(1)_Format_Table.osts`
+  - prepare imported TSV data
+- `ACL_MANAGEMENT_(2)_Create_PivTab.osts`
+  - generate normalized Pivot Table
+- `ACL_MANAGEMENT_(3)_Refresh_PivTab.osts`
+  - refresh and re-format Pivot Table
+- `ACL_MANAGEMENT_(4)_Mark_Cells.osts`
+  - add optional visual marks
+- `ACL_MANAGEMENT_(5)_Color_Feedback.osts`
+  - add optional color feedback and contextual enrichment
 
 ---
 
-## 🚀 Use Cases
+## Multi-Vault Design Considerations
 
-- CyberArk Safe ACL audit
-- Permission review workshops
-- Lab environments (KVS)
-- Customer quick assessment
-- Governance visualization
+A major design goal of the ToolBox is the ability to operate multiple Vault contexts from the same workspace.
 
----
+This is mainly achieved through `VAULT_CONTEXT`, which prefixes:
 
-## ⚠️ Notes
+- log files
+- temporary files
+- output files
+- review input files
 
-- Provided **as-is**
-- Community-based support
-- Validate in lab before production use
+This minimizes collision risk and keeps execution traces separated.
 
 ---
 
-## 🤝 Contribution
+## Operational Notes
 
-Part of:
+- Extraction-only scenarios are ideally executed with an Auditor account.
+- Refresh and suppression scenarios require a privileged account.
+- Conversion-only modes are available on extraction, refresh, and suppression workflows.
+- Unknown `ACL_SMART_STRING` values are preserved when missing from the conversion matrix.
+- Reverse conversion files must always remain aligned with forward conversion files.
 
-- **Krystal Vault Planet (KVP)**
-- **CyberArk Fun Club**
+---
 
-Contributions and feedback are welcome!
+## Planned Documentation Extensions
+
+The `doc` folder is reserved for future offline documents, including:
+
+- command-level guides
+- installation and configuration guide
+- processing overview
+- quick testing guide
+
+This README can later be split or replicated in shorter companion documents if needed.
+
+---
+
+## Contribution and Review
+
+This documentation is a **draft** and is intended to be reviewed by CyberArk Fun Club members.
+
+Review topics may include:
+
+- Markdown rendering quality
+- role naming consistency
+- conversion logic clarity
+- script behavior accuracy
+- screenshot selection and placement
+
+---
+
+## Suggested Screenshot Checklist
+
+To finalize this README, the following screenshots are recommended:
+
+1. architecture overview diagram
+2. ACL Smart String description sheet
+3. ACL role matrix example from lab data
+4. TSV import screen in Excel
+5. Pivot Table result
+6. marked-cells example
+7. color-feedback example
+
+---
+
+## Final Notes
+
+The ToolBox is designed to remain lightweight, practical, and reusable.
+
+Its strength comes from the combination of:
+
+- REST API extraction
+- deterministic normalization
+- reversible role conversion
+- Excel-based review workflow
+- controlled remediation preparation
+
+This makes it suitable for lab experimentation, quick governance reviews, and structured ACL preparation work.
