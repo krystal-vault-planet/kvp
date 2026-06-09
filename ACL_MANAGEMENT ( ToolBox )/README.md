@@ -1,12 +1,13 @@
-# 🚧 DRAFT VERSION — UNDER REVIEW BY CYBERARK FUN CLUB MEMBERS 🚧
+# 🚧 DRAFT VERSION 🚧
+# UNDER REVIEW BY CYBERARK FUN CLUB COMMUNITY...
 
 > **Status:** Draft documentation for review, corrections, and functional validation by CyberArk Fun Club members before wider publication.
 
 ---
 
-# ACL_MANAGEMENT (ToolBox)
+# 🔐 ACL_MANAGEMENT (ToolBox)
 
-## Overview
+## 📖 Overview
 
 `ACL_MANAGEMENT (ToolBox)` is a lightweight and modular tool pack designed to support CyberArk Safe ACL extraction, normalization, visualization, and controlled remediation.
 
@@ -28,7 +29,7 @@ This ToolBox is part of the **Krystal Vault Planet (KVP)** and **CyberArk Fun Cl
 
 ---
 
-## Architecture Overview
+## ️🏗️ Architecture Overview
 
 The overall processing model is based on four major stages:
 
@@ -70,11 +71,11 @@ Excel / Office Scripts           $3_REFRESH_ACL_.cmd
 
 ---
 
-## Folder Structure
+## 📁 Folder Structure
 
 The ToolBox is organized into a modular sub-folder structure.
 
-### `bin`
+### 📦 `.\bin\`
 
 This folder contains executables, DLL files, and PowerShell scripts used for extraction and refresh processing.
 
@@ -86,7 +87,7 @@ Typical contents include:
 
 This folder is the execution engine of the ToolBox.
 
-### `cfg`
+### ⚙️ `.\cfg\`
 
 This folder contains one configuration file per Vault environment.
 
@@ -128,7 +129,7 @@ The conversion sequence is:
 REST API ACL --> ACL_SMART_STRING --> ACL_ROLE
 ```
 
-### `doc`
+### 📚 `.\doc\`
 
 This folder is currently empty.
 
@@ -143,7 +144,7 @@ It is reserved for future offline documentation, such as:
 - one document describing installation and configuration
 - one document describing quick test scenarios for basic validation
 
-### `log`
+### 📝 `.\log\`
 
 This folder is currently empty except for a placeholder file required to keep the folder in GitHub.
 
@@ -154,7 +155,7 @@ It is intended to store:
 
 All generated log files are prefixed with `VAULT_CONTEXT`.
 
-### `sql`
+### 🧠 `.\sql\`
 
 This folder contains LogParser SQL-like conversion logic.
 
@@ -166,7 +167,7 @@ These files are used to convert:
 
 This folder is the normalization and reverse-conversion engine of the ToolBox.
 
-### `tmp`
+### 🧪 `.\tmp\`
 
 This folder is currently empty except for a placeholder file required to keep the folder in GitHub.
 
@@ -174,7 +175,7 @@ It is intended to store intermediate processing files generated during execution
 
 All generated temporary files are prefixed with `VAULT_CONTEXT`.
 
-### `xls`
+### 📊 `.\xls\`
 
 This folder contains Office Scripts.
 
@@ -195,7 +196,7 @@ This keeps the execution model simple and makes manual review easier.
 
 ---
 
-## Main Command Workflow
+## ⚙️ Main Command Workflow
 
 The ToolBox relies on a session-driven execution model:
 
@@ -203,7 +204,7 @@ The ToolBox relies on a session-driven execution model:
 INIT --> EXTRACT --> REVIEW --> REFRESH or SUPPRESS --> TERM
 ```
 
-### `\$1_INIT_.cmd`
+### 🚀 `.\$1_INIT_.cmd`
 
 This script initializes the session.
 
@@ -226,7 +227,7 @@ Reason:
 - the Auditor account cannot normally be removed from Safe permissions
 - this makes it a stable account for read-oriented extraction scenarios
 
-### `\$2_EXTRACT_ACL_.cmd`
+### 📥 `.\$2_EXTRACT_ACL_.cmd`
 
 This script performs Safe discovery, ACL extraction, consolidation, and conversion.
 
@@ -276,7 +277,7 @@ The main extraction output is:
 [_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
 ```
 
-### `\$3_REFRESH_ACL_.cmd`
+### 🔄 `.\$3_REFRESH_ACL_.cmd`
 
 This script applies ACL additions or modifications.
 
@@ -322,7 +323,7 @@ It is useful for validation of:
 - reverse transformation
 - candidate refresh input files
 
-### `\$3_SUPPRESS_ACL_.cmd`
+### ❌ `.\$3_SUPPRESS_ACL_.cmd`
 
 This script removes permissions.
 
@@ -354,7 +355,7 @@ The script also supports:
 
 This allows validation of the reverse-conversion pipeline without deleting permissions.
 
-### `\$4_TERM_.cmd`
+### 🔒 `.\$4_TERM_.cmd`
 
 This script terminates the session.
 
@@ -368,7 +369,7 @@ This helps keep the session model clean between runs.
 
 ---
 
-## ACL_SMART_STRING Model
+## 🔁 ACL_SMART_STRING Model
 
 `ACL_SMART_STRING` is the normalization format used by the ToolBox.
 
@@ -444,13 +445,7 @@ Where the grouped meaning is:
 
 Rights names and descriptions are aligned with wording extracted from PVWA version `14.2`, while alternate wording may exist in other versions.
 
-🔴 **SCREENSHOT PLACEHOLDER:** Add the ACL Smart String description image here.
-
-Suggested file reference:
-
-```text
-ACL_Smart_String_Description_20250916.png
-```
+![ACL Description](media/ACL_Smart_String_Description_20250916.png)
 
 ---
 
@@ -516,13 +511,7 @@ must also be aligned.
 
 This is required to preserve conversion reversibility.
 
-🔴 **SCREENSHOT PLACEHOLDER:** Add the ACL role matrix example image here.
-
-Suggested file reference:
-
-```text
-ACL_MATRIX_from_RED_VAULT_20250915.png
-```
+![ACL Matrix on RED VAULT / LAB](media/ACL_MATRIX_from_RED_VAULT_20250915.png)
 
 ---
 
