@@ -398,8 +398,7 @@ Where the grouped meaning is:
 - `LuR` = account access permissions
 - `CPWTnrDU` = account management permissions
 - `SmOaB` = Safe-level permissions
-- `A` = approve requests permission
-- `N` = no-confirmation permission
+- `A_N` = approve requests and no-confirmation permissions
 - `mcd` = folder-level permissions
 
 ### Permission reference
@@ -432,7 +431,7 @@ Where the grouped meaning is:
 #### Approval and access-control area
 
 - `A` = Approve
-- `_` = confirmation level placeholder or separator position
+- `_` = confirmation level placeholder
 - `N` = No confirmation
 
 #### Folder permissions
