@@ -44,7 +44,7 @@ The overall processing model is based on four major stages:
 CyberArk PVWA REST API
         |
         v
-$1_INIT_.cmd
+$1_INIT_.cmd ( Auditors )
         |
         v
 $2_EXTRACT_ACL_.cmd
@@ -55,13 +55,14 @@ REST ACL --> ACL_SMART_STRING --> ACL_ROLE
         v
 [_<VAULT_CONTEXT>_]_OWNERS_ROLE_MATRIX_.tsv
         |
-        +--------------------------------+------------------------------------------------------+
-        |                                |                                                      |
-        v                                v                                                      v
-Excel / Office Scripts           [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_REFRESH_#_.tsv         $3_REFRESH_ACL_.cmd
-(Pivot review & feedback)        [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_SUPPRESS_#_.tsv        $3_SUPPRESS_ACL_.cmd
-        |                                |                                                      |
-        +--------------------------------+------------------------------------------------------+
+        +--------------------------------+--------------------------------------------------------+
+        |                                |                                                        |
+        v                                v                                                        v
+Excel + Office Scripts     +                                                              $1_INIT_.cmd ( Administrators )
+Pivot Table ( ACL Matrix ) +---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_REFRESH_#_.tsv  +----> $3_REFRESH_ACL_.cmd
+(review & feedback)        +---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_SUPPRESS_#_.tsv +----> $3_SUPPRESS_ACL_.cmd
+        |                                |                                                        |
+        +--------------------------------+--------------------------------------------------------+
         |
         v
 $4_TERM_.cmd
