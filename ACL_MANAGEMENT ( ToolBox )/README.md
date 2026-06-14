@@ -57,10 +57,10 @@ REST ACL --> ACL_SMART_STRING --> ACL_ROLE
         |
         +--------------------------------+--------------------------------------------------------+
         |                                |                                                        |
-        v                                v                                                        v
-Excel + Office Scripts     +                                                              $1_INIT_.cmd ( Administrators )
-Pivot Table ( ACL Matrix ) +---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_REFRESH_#_.tsv  +----> $3_REFRESH_ACL_.cmd
-(review & feedback)        +---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_SUPPRESS_#_.tsv +----> $3_SUPPRESS_ACL_.cmd
+        v                                |                                                       v
+Excel + Office Scripts     |             v                                                $1_INIT_.cmd ( Administrators )
+Pivot Table ( ACL Matrix ) |---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_REFRESH_#_.tsv  +----> $3_REFRESH_ACL_.cmd
+(review & feedback)        |---> [_<VAULT_CONTEXT>_]_ROLE_MATRIX_#_SUPPRESS_#_.tsv +----> $3_SUPPRESS_ACL_.cmd
         |                                |                                                        |
         +--------------------------------+--------------------------------------------------------+
         |
