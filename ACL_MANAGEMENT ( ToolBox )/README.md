@@ -481,16 +481,16 @@ The current examples include several functional families, such as:
 Examples of friendly role labels currently visible in the provided matrix include:
 
 ```text
-(M)_MASTER_(M)
-(M)_SUPER_ADMIN_(M)
-(M)_MANAGE_PROPERTIES_(M)
-(C)_CONNECT_ONLY_(C)
-(C)_READ_ONLY_(C)
-(R)_END-USER_(R)
-(R)_END-USER+UNLOCKER_(R)
-(T)_CPM-ENGINE_(T)
-(i)_AUDITOR_(i)
-(?)_NO_PERMISSION_(?)
+(M)_MASTER_(M)            --> Vault Management Role (Master)
+(M)_SUPER_ADMIN_(M)       --> Vault Management Role (Administrator)
+(M)_MANAGE_PROPERTIES_(M) --> Vault Management Role (Properties Only)
+(C)_CONNECT_ONLY_(C)      --> CyberArk Default Role (Connect)
+(C)_READ_ONLY_(C)         --> CyberArk Default Role (Connect+Retrieve)
+(R)_END-USER_(R)          --> External User Role (Retrieve+Write+Task+Audit)
+(R)_END-USER+UNLOCKER_(R) --> External User Role (Same with Unlock)
+(T)_CPM-ENGINE_(T)        --> Technical Access (CPM)
+(i)_AUDITOR_(i)           --> CyberArk Internal Access (Auditors group)
+(?)_NO_PERMISSION_(?)     --> Access Placeholder
 ```
 
 ### Consistency rule
@@ -596,9 +596,9 @@ The current visual usage described includes adding or coloring:
 
 using colors such as:
 
-- `YELLOW`
-- `ORANGE`
-- `BLUE`
+- `YELLOW` → Existing correct mapping (SAFE/MEMBER/ROLE match)
+- `ORANGE` → Permission mismatch (SAFE/MEMBER match but ROLE differ)
+- `BLUE` → Missing ACL (SAFE/MEMBER did not exist, ACL to be added) 
 
 Recommended usage:
 
