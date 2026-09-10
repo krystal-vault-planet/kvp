@@ -47,18 +47,18 @@ IF NOT EXIST "sql\CONVERT_4_ACL_Smartstring_to_REST_API.sql" GOTO ERROR_MISSING_
 
 	ECHO.
 	SET ACL_PARAM_temp_authentication_type=
-	SET /P ACL_PARAM_temp_authentication_type=(+) Authentication Type ( default is "Cyberark" ) -^> 
+	SET /P ACL_PARAM_temp_authentication_type=(+) Authentication Type ( default is "cyberark" ) : 
 	IF NOT DEFINED ACL_PARAM_temp_authentication_type SET ACL_PARAM_temp_authentication_type=cyberark
 	ECHO *** ACL_PARAM_temp_authentication_type=%ACL_PARAM_temp_authentication_type% ***
 
 	ECHO.
 	SET ACL_PARAM_temp_username=
-	SET /P ACL_PARAM_temp_username=(+) Enter UserName      ( default is "Auditor" ) -^> 
+	SET /P ACL_PARAM_temp_username=(+) Enter UserName      ( default is "Auditor" )  : 
 	IF NOT DEFINED ACL_PARAM_temp_username SET ACL_PARAM_temp_username=Auditor
 	ECHO *** ACL_PARAM_temp_username=%ACL_PARAM_temp_username% ***
 
 	SET ACL_PARAM_temp_password=
-	SET /P ACL_PARAM_temp_password=(+) Enter Password      ( default is "Check411!" ) -^> 
+	FOR /F "delims=" %%i IN ('powershell -Command "$p=Read-Host '(+) Enter Password      ( default is ********* )  ' -AsSecureString; $b=[Runtime.InteropServices.Marshal]::SecureStringToBSTR($p); [Runtime.InteropServices.Marshal]::PtrToStringAuto($b)"') DO SET "ACL_PARAM_temp_password=%%i"
 	IF NOT DEFINED ACL_PARAM_temp_password SET ACL_PARAM_temp_password=Check411!
 
 	SET ACL_PARAM_temp_curl_output_file=tmp\%~n0.CURL.tmp

@@ -1,1 +1,1 @@
-https://cyberark-fr2.kyndryl.net/PasswordVault/swagger/ui/index#!/Auth/Auth_Logon
+https://<Your_CyberArk_PVWA_URL>/PasswordVault/swagger/ui/index#!/Auth/Auth_Logon
