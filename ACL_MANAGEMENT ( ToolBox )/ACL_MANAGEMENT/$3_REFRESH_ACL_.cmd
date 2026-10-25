@@ -54,7 +54,7 @@ IF /I "%~1" == "-CONVERT-ONLY" GOTO End_of_Script
 	ECHO ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	ECHO Search for PowerShell Errors ( in ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log" )...
 	IF EXIST ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log" FINDSTR /I /C:"ERROR" ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log"
-	TF EXIST ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log" IF ERRORLEVEL 1 ECHO ### NO ERRORS ###
+	IF EXIST ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log" IF ERRORLEVEL 1 ECHO ### NO ERRORS ###
 	IF NOT EXIST ".\log\!_%ACL_PARAM_VAULT_CONTEXT%_!_*.log" ECHO ### LOG FILES DID NOT EXIST ###
 	ECHO ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	SET ACL_PARAM_

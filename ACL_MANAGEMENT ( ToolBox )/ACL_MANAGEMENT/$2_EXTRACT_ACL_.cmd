@@ -54,6 +54,10 @@ IF /I "%~1" == "-CONVERT-ONLY" GOTO Convert_only_current_Owners_List_as_Role_Mat
 	ECHO *** Waiting for Threads Completion... ***
 	ECHO.
 
+:Waiting_for_Threads_Completion_INIT
+
+	SET /A ACL_PARAM_temp_number_of_wait=0
+
 :Waiting_for_Threads_Completion_LOOP
 
 	SET /A ACL_PARAM_temp_number_of_cmd=0
@@ -63,11 +67,21 @@ IF %ACL_PARAM_temp_number_of_cmd% EQU 0 GOTO Waiting_for_Threads_Completion_NEXT
 
 	ECHO . | SET /P ACL_PARAM_temp_dot=.
 	TIMEOUT /T 1 > NUL 2>&1
+	SET /A ACL_PARAM_temp_number_of_wait=%ACL_PARAM_temp_number_of_wait% + 1
 
-GOTO Waiting_for_Threads_Completion_LOOP
+IF %ACL_PARAM_temp_number_of_wait% GTR 30 ( GOTO Waiting_for_Threads_Completion_CHECK ) ELSE ( GOTO Waiting_for_Threads_Completion_LOOP )
+
+:Waiting_for_Threads_Completion_CHECK
+
+	ECHO.
+	DIR ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" /B
+	ECHO.
+
+GOTO Waiting_for_Threads_Completion_INIT
 
 :Waiting_for_Threads_Completion_NEXT
 
+	SET ACL_PARAM_temp_number_of_wait=
 	SET ACL_PARAM_temp_number_of_cmd=
 	SET ACL_PARAM_temp_dot=
 

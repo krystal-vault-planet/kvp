@@ -198,7 +198,7 @@ $global:IncludeCallStack = $IncludeCallStack.IsPresent
 $global:UseVerboseFile = $UseVerboseFile.IsPresent
 
 # Script Version
-$ScriptVersion = '2.2.6+KVS_CUSTOM_20260225'
+$ScriptVersion = '2.2.6+KVS_CUSTOM_20261025'
 
 # ------ SET global parameters ------
 # Set Log file path
