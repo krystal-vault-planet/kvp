@@ -33,7 +33,7 @@ IF /I "%~1" == "-CONVERT-ONLY" GOTO Convert_only_current_Owners_List_as_Role_Mat
 
 	SET ACL_PARAM_temp_debug_parameters_for_power_shell=
 	IF DEFINED DEBUG SET ACL_PARAM_temp_debug_parameters_for_power_shell=-IncludeCallStack -UseVerboseFile
-	SET /A ACL_PARAM_temp_multithreading_limit=20
+	SET /A ACL_PARAM_temp_multithreading_limit=12
 
 	SET ACL_PARAM_temp_safe_filter=%~1
 	IF NOT DEFINED ACL_PARAM_temp_safe_filter SET /P ACL_PARAM_temp_safe_filter=(+) Enter Safe Filter with FINDSTR /R syntax ( optional ) : 
@@ -47,8 +47,10 @@ IF /I "%~1" == "-CONVERT-ONLY" GOTO Convert_only_current_Owners_List_as_Role_Mat
 	IF EXIST ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_EXTRACT_OWNERS_LIST_.csv" DEL ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_EXTRACT_OWNERS_LIST_.csv"
 	IF EXIST ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" DEL ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd"
 	IF EXIST ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.csv" DEL ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.csv"
+	SET /A ACL_PARAM_temp_remaining_cmd=%ACL_PARAM_temp_multithreading_limit%
 	IF "%ACL_PARAM_temp_safe_filter%" == "###_N/A_###" FOR /F "tokens=1,* delims=," %%i IN ('TYPE ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_EXTRACT_SAFES_LIST_.csv" ^| SORT ^| FINDSTR /V /R /C:"^.safeName.,.managingCPM." 2^> NUL') DO CALL :Collect_Safe_Owners_For_One_Safe "%%~i" ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_%%~i_+.csv"
 	IF NOT "%ACL_PARAM_temp_safe_filter%" == "###_N/A_###" FOR /F "tokens=1,* delims=," %%i IN ('TYPE ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_EXTRACT_SAFES_LIST_.csv" ^| SORT ^| FINDSTR /V /R /C:"^.safeName.,.managingCPM." 2^> NUL ^| FINDSTR /I /R /C:"^.%ACL_PARAM_temp_safe_filter%.,.*,.*,.*,.*$" 2^> NUL') DO CALL :Collect_Safe_Owners_For_One_Safe "%%~i" ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_%%~i_+.csv"
+	SET ACL_PARAM_temp_remaining_cmd=
 
 	ECHO.
 	ECHO *** Waiting for Threads Completion... ***
@@ -76,6 +78,18 @@ IF %ACL_PARAM_temp_number_of_wait% GTR 30 ( GOTO Waiting_for_Threads_Completion_
 	ECHO.
 	DIR ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" /B
 	ECHO.
+
+	ECHO Some ACL Extraction Thread(s) are still running ( or freezed )...
+	CHOICE /C WK /T 5 /D W /M "Enter [W] to wait more time or [K] to kill and restart them :"
+
+IF %ERRORLEVEL%==1 GOTO Waiting_for_Threads_Completion_INIT
+IF %ERRORLEVEL%==2 GOTO Waiting_for_Threads_Completion_KILL_AND_RESTART
+
+:Waiting_for_Threads_Completion_KILL_AND_RESTART
+
+	TASKKILL /FI "WINDOWTITLE eq _THREAD_ %ACL_PARAM_VAULT_CONTEXT%"
+	FOR /F "tokens=*" %%i IN ('DIR ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" /B 2^> NUL') DO START "_THREAD_ %ACL_PARAM_VAULT_CONTEXT%" /MIN CMD /C ".\tmp\%%~i"
+	TIMEOUT /T 3 > NUL 2>&1
 
 GOTO Waiting_for_Threads_Completion_INIT
 
@@ -132,24 +146,30 @@ REM -------- FUNCTION SECTION --------------------------------------------------
 
 :Collect_Safe_Owners_For_One_Safe_BACK_LOOP
 
-	SET /A ACL_PARAM_temp_number_of_cmd=0
-	FOR /F "tokens=*" %%i IN ('DIR ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" /B 2^> NUL ^| FIND /C "."') DO SET /A ACL_PARAM_temp_number_of_cmd=%%i
-IF %ACL_PARAM_temp_number_of_cmd% GEQ %ACL_PARAM_temp_multithreading_limit% GOTO Collect_Safe_Owners_For_One_Safe_WAIT_LOOP
+IF %ACL_PARAM_temp_remaining_cmd% LEQ 0 GOTO Collect_Safe_Owners_For_One_Safe_CHECK_AND_WAIT_LOOP
 
 	ECHO CALL "%ACL_PARAM_POWER_SHELL_PATH%" ".\bin\Safe-Management-CUSTOM.ps1" -PVWAURL "%ACL_PARAM_PVWA_URL%" -AuthType cyberark -DisableSSLVerify -AllowInsecureURL -logonToken "%ACL_PARAM_TOKEN%" -concurrentSession -VaultContext "%ACL_PARAM_VAULT_CONTEXT%" -Members -SafeName "%~1" -IncludeDefault -ReportPath "%~2" %ACL_PARAM_temp_debug_parameters_for_power_shell% > ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_%~1_+.cmd"
 	ECHO DEL "%%~0">> ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_%~1_+.cmd"
 
 	START "_THREAD_ %ACL_PARAM_VAULT_CONTEXT%" /MIN CMD /C ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_%~1_+.cmd"
 
-	SET ACL_PARAM_temp_number_of_cmd=
-	SET ACL_PARAM_temp_dot=
+	SET /A ACL_PARAM_temp_remaining_cmd=%ACL_PARAM_temp_remaining_cmd% - 1
 
 GOTO :EOF
 
-:Collect_Safe_Owners_For_One_Safe_WAIT_LOOP
+:Collect_Safe_Owners_For_One_Safe_CHECK_AND_WAIT_LOOP
 
 	ECHO . | SET /P ACL_PARAM_temp_dot=.
 	TIMEOUT /T 1 > NUL 2>&1
+
+	SET /A ACL_PARAM_temp_number_of_cmd=0
+	FOR /F "tokens=*" %%i IN ('DIR ".\tmp\+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd" /B 2^> NUL ^| FIND /C "."') DO SET /A ACL_PARAM_temp_number_of_cmd=%%i
+IF %ACL_PARAM_temp_number_of_cmd% GEQ %ACL_PARAM_temp_multithreading_limit% GOTO Collect_Safe_Owners_For_One_Safe_CHECK_AND_WAIT_LOOP
+
+	SET /A ACL_PARAM_temp_remaining_cmd=%ACL_PARAM_temp_multithreading_limit% - %ACL_PARAM_temp_number_of_cmd%
+
+	SET ACL_PARAM_temp_number_of_cmd=
+	SET ACL_PARAM_temp_dot=
 
 GOTO Collect_Safe_Owners_For_One_Safe_BACK_LOOP
 

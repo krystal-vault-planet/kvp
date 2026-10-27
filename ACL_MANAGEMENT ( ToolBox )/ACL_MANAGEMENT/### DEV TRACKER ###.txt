@@ -244,6 +244,23 @@ Requirement : Need to transpose INIT Process using Configuration File ( as TSV o
 ---> Update DEV TRACKER file ( as usual ) and sync to ZIP, OneDrive and GitHub.
 ---> NO Mail had been sent to CyberArk "Fun" Club and NO dedicated message also posted into FTTB Chat window. Will do next time.
 
++ ACL_MANAGEMENT_20261027...
+---> Publishing places...
+     - EXTERNAL : https://github.com/krystal-vault-solutions/kvp/tree/main/ACL_MANAGEMENT%20(%20ToolBox%20)/ACL_MANAGEMENT
+     - INTERNAL : https://kyndryl.sharepoint.com/:f:/r/teams/mettlingprojects/Shared%20Documents/KVS%20Repository/ACL_MANAGEMENT
+---> Improve Start Management from ACL Extraction Threads :
+     - When starting CMD Threads, consider remaining seats and not current running. ACL_PARAM_temp_remaining_cmd counter is initiated as per ACL_PARAM_temp_multithreading_limit ( set as 12 now ).
+     - Each time a new CMD is started, the ACL_PARAM_temp_remaining_cmd counter decrease from 1. When it reach 0, we check how many CMD remains ( after short pause ).
+     - We reset counter as per ACL_PARAM_temp_remaining_cmd=%ACL_PARAM_temp_multithreading_limit% - %ACL_PARAM_temp_number_of_cmd% and loop restart.
+---> Improve Wait Management from ACL Extraction Threads :
+     - After starting all required ACL Extraction CMD, we wait for completion by looking for remaining "+_%ACL_PARAM_VAULT_CONTEXT%_+_THREAD_+_*_+.cmd".
+     - A counter is incremented each time we wait for 1 seconds. After it goes to 30, we ask the operator if he/she want to wait more or kill/restart remaining Threads.
+     - The choice message is --> "Enter [W] to wait more time or [K] to kill and restart them :" <-- and timeout is 5 seconds before considering [W] by default.
+---> The new improvement had been tested, several times, during FR1+FR2 ACL Cleanup program.
+---> REMINDER : Replication on OneDrive ( KVS Repository ) contains all configuration files, but on GitHub ( kvp/.../ACL_MANAGEMENT ) just contains ### and RED configuration files.
+---> Update DEV TRACKER file ( as usual ) and sync to ZIP, OneDrive and GitHub.
+---> NO Mail had been sent to CyberArk "Fun" Club and NO dedicated message also posted into FTTB Chat window. Will do next time.
+
 
 
 + ### TBC ###
